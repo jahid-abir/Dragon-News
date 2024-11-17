@@ -1,13 +1,18 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Provider/AuthProvider';
 
 const Register = () => {
-    const { getSignUp, setUser } = useContext(AuthContext)
+    const { getSignUp, setUser,updateUserProfile } = useContext(AuthContext)
+    const [error,setError] = useState('')
+    const navigate = useNavigate()
     const handleRegister = (e) => {
         e.preventDefault()
         const form = new FormData(e.target)
         const name = form.get('name')
+        if(name.length < 6){
+            return setError('Name must be contain 6 character')
+        }
         const photo = form.get('photo')
         const email = form.get('email')
         const password = form.get('password')
@@ -15,6 +20,11 @@ const Register = () => {
         getSignUp(email, password)
             .then(result => {
                 setUser(result.user)
+                updateUserProfile({displayName : name,photoURL:photo})
+                .then(()=>{
+                    navigate('/')
+                })
+                .catch(err => console.log(err))
             })
             .catch(err => console.log(err))
 
@@ -28,6 +38,9 @@ const Register = () => {
                             <span className="label-text">Name</span>
                         </label>
                         <input type="text" placeholder="Name" name='name' className="input input-bordered" required />
+                        {
+                            error && <p className='text-xs text-red-600'>{error}</p>
+                        }
                     </div>
                     <div className="form-control">
                         <label className="label">
